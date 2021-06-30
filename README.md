@@ -1,15 +1,18 @@
-# Chainlink-poc-local
+# Chainlink local
+
+
+## Local node
 
 This proof of concept explains how to run a chainlink node on your computer. This should not be used as production environment but rather as an exercice to get familiar with chainlink concepts.
 
-## Prerequisites
+### Prerequisites
 
 * Must have docker installed [docker](https://docs.docker.com/get-docker/)
 * Must have a connection to Ethereum , either using a local client or external provider. In my case, I'm using [Infura](https://infura.io/)
 
-## Run a Chainlink Node
+### Run a Chainlink Node
 
-### Create a docker network bridge
+#### Create a docker network bridge
 
 We are going to run 2 containers:
 * One for Chainlink node
@@ -21,7 +24,7 @@ Chainlink node must be able to access postgresql container. By defualt, every co
  docker network create cl-net
 ```
 
-### Run a local Postgresql database
+#### Run a local Postgresql database
 
 We are running here the [official postgres docker image](https://hub.docker.com/_/postgres). Note the user name is `cl-node` and password is `cl-node-pass` . we are also mounting a volume in order to persist data even if the container restarts
 
@@ -48,7 +51,7 @@ Command should display `cl-postgres` as "UP"
 
 ![PG docker successful](images/docker-ps-pg-success.png)
 
-### Install a postgresql client
+#### Install a postgresql client
 
 This is optional but you can install a postgresql client in order to view data that will be created. I'm using [pgadmin](https://www.postgresql.org/)
 
@@ -62,7 +65,7 @@ Once installed, you can create a new connection:
 Once saved, connection should be sucessful and you'll be able to see your database as show below:
 ![DB succesful connection](images/pgadmin-success.png)
 
-### Prepare environment files
+#### Prepare environment files
 
 Follow the steps [Running a Chainlink Node](https://docs.chain.link/docs/running-a-chainlink-node/)
 
@@ -74,7 +77,7 @@ echo "DATABASE_URL=postgresql://cl-node:cl-node-pass@cl-postgres:5432/postgres?s
 
 Note `cl-postgres` is the container name of postgres. As we will run chainlink container on the same network, "cl-postgres" will be resolved to an internal IP reachable by chainlink container
 
-### Run Chainlink node
+#### Run Chainlink node
 
 When running the chainlink node, do not forget to specify the network so that chainlink node is able to call Postgres container. Your command should look like the following:
 
@@ -86,7 +89,7 @@ Now running `docker ps` should display 2 containers
 
 ![Chainlink docker successful](images/chainkink-success.png)
 
-### Import account in Metamask
+#### Import account in Metamask
 
 sometimes it could be interesting to view the account in metamask and be able to check the funds. To do so, please follow these steps:
 
@@ -98,9 +101,45 @@ sometimes it could be interesting to view the account in metamask and be able to
 * on the host machine, you should find "key.json" in "~/.chainlink-rinkeby" (If you are using rinkeby for your tests)
 * you can import "key.json" in metamask. If will ask you for a password, you can use the password that was set in ".password"
 
-### Fund the node account
+#### Fund the node account
 
 you can get ETH and LINK following these links:
 
 * [LINK](https://docs.chain.link/docs/acquire-link/)
 * list of ETH faucets  per environment could be found here: [ETH](https://support.mycrypto.com/how-to/getting-started/where-to-get-testnet-ether)
+
+#### Test the node 
+
+you can start fulfilling requests following this [chianlink tutorial](https://docs.chain.link/docs/fulfilling-requests/)
+
+## Chainlink external adapter
+
+based on chainlink blog: [Building and using External Adapters](https://blog.chain.link/build-and-use-external-adapters/)
+
+### How to build an externa adapter
+
+1st part of blog
+
+```
+cd external-adapter/eth-price
+yarn
+yarn start
+```
+
+in another terminal , you should get a succesful reponse if you run 
+`curl -X POST -H "content-type:application/json" "http://localhost:8080/" --data '{ "id": 0, "data": { "from": "ETH", "to": "USD" } }'`
+
+### Getting Weather Data
+
+2nd part of blog
+* You need first to register in [Openweathermap](https://openweathermap.org/) and get an API key. 
+* Create a `.env`file then add the API Key to it `API_KEY=<YOUR_API_KEY>`
+
+```
+cd external-adapter/weather
+yarn
+yart start
+```
+
+in another terminal , you should get a succesful reponse if you run 
+`curl -X POST -H "content-type:application/json" "http://localhost:8080/" --data '{ "id": 0, "data": { "city": "Boston"} }`
